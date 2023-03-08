@@ -80,6 +80,8 @@ namespace ChatGPT_API_Test_Console_App
                 imageCount = 2;
             }
 
+            Console.WriteLine("Sending Request to DALL-E, please wait.");
+
             var imageResult = await service.Image.CreateImage(new ImageCreateRequest
             {
                 Prompt = prompt,
@@ -92,13 +94,16 @@ namespace ChatGPT_API_Test_Console_App
 
             if (imageResult.Successful)
             {
+                //create the output dir if it doesnt exist
+                System.IO.Directory.CreateDirectory("output");
+
                 using (WebClient client = new WebClient())
                 {
                     int i = 0;
                     foreach (var u in imageResult.Results)
                     {
                         //cheesy way of making the filenames differ
-                        var filename = @"image-" + DateTime.Now.ToShortDateString().Replace('/', '-') + "-" + DateTime.Now.ToLongTimeString().Replace(':', '-') + ".png";
+                        var filename = @"output\image-" + DateTime.Now.ToShortDateString().Replace('/', '-') + "-" + DateTime.Now.ToLongTimeString().Replace(':', '-') + ".png";
 
                         //download the output image to the working directory
                         client.DownloadFile(new Uri(u.Url), filename);
@@ -113,7 +118,7 @@ namespace ChatGPT_API_Test_Console_App
 
                 //open explorer to see the output files
                 var uriString = Path.GetDirectoryName(path: Assembly.GetExecutingAssembly().CodeBase);
-                _ = Process.Start("explorer.exe", "/open, " + new Uri(uriString).LocalPath);
+                _ = Process.Start("explorer.exe", "/open, " + new Uri(uriString).LocalPath + "\\output\\");
 
                 Console.WriteLine("\nPress any key to continue.");
                 Console.ReadLine();
@@ -130,6 +135,8 @@ namespace ChatGPT_API_Test_Console_App
             {
                 prompt = input;
             }
+
+            Console.WriteLine("Sending ChatCompletion request, please wait.");
 
             var completionResult = await service.ChatCompletion.CreateCompletion(new ChatCompletionCreateRequest
             {
